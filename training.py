@@ -150,44 +150,6 @@ class MXNetTrainingWorker(object):
         else:
             self.val_data = None
 
-    def prepare_model(self):
-        """load 网络模型，（更新输出层）
-        """
-        # 需要更新模型输出层种类数目的场景，用户自行决定模型文件的路径，非必要场景
-        # 用户可以直接使用训练框架来读取模型
-        # 替换成自己需要的模型名以及参数名 Riheng 2018/02/23
-        origin_model_path = self.train_ins.get_model_base_path() + "/resnet-50-symbol.json"
-        weight_file_path = self.train_ins.get_model_base_path() + "/resnet-50-0000.params"
-        fixed_model_path = self.train_ins.get_model_base_path() + "/fixed_resnet-50-symbol.json"
-
-        # AVA-SDK 获取数据集类型数 && 更新网络模型输出层
-        output_layer_num = utils.get_sampleset_class_num()
-        old_output_layer_name = model_utils.update_model_output_num(
-            origin_model_path, fixed_model_path, output_layer_num)
-
-        sym = mx.symbol.load(fixed_model_path)
-        gpu_count = self.solver_config.get('gpu_counts', 0)
-        ctx = [mx.cpu()] if gpu_count == 0 else [
-            mx.gpu(i) for i in xrange(gpu_count)
-        ]
-        mod = mx.mod.Module(symbol=sym, context=ctx)
-
-        mod.bind(data_shapes=self.train_data.provide_data,
-                 label_shapes=self.train_data.provide_label)
-
-        # 默认权值初始化方式
-        mod.init_params(initializer=mx.init.Xavier(rnd_type='gaussian',
-                                                   factor_type="in",
-                                                   magnitude=2))
-        # AVA-SDK 在替换网络输出层的场景下读取权重参数
-        arg_params, aux_params = model_utils.load_model_params(
-            weight_file_path, old_output_layer_name)
-        if arg_params:
-            logger.info("set pretrained weights")
-            mod.set_params(arg_params, aux_params, allow_missing=True)
-
-        self.mod = mod
-
     def get_fine_tune_model(self, symbol, arg_params, num_hidden, layer_name='flatten0'):
         """
         symbol: the pretrained network symbol
@@ -202,7 +164,7 @@ class MXNetTrainingWorker(object):
         new_args = dict({k:arg_params[k] for k in arg_params if 'fc1' not in k})
         return (net, new_args)
 
-    def prepare_model_riheng(self):
+    def prepare_model(self):
         '''load 网络模型，（更新输出层）
         '''
         sym, arg_params, aux_params = mx.model.load_checkpoint('/workspace/model/resnet-50', 0)
@@ -250,8 +212,7 @@ class MXNetTrainingWorker(object):
             logger.info("prepare_sampleset_config")
             self.prepare_sampleset_data()
             logger.info("prepare_model")
-            #self.prepare_model()
-            self.prepare_model_riheng()
+            self.prepare_model()
 
             opts = self.train_config
             opts.update(self.solver_config)
