@@ -9,5 +9,4 @@ wget http://data.mxnet.io/models/imagenet/resnet/50-layers/resnet-50-0000.params
 wget http://data.mxnet.io/models/imagenet/resnet/50-layers/resnet-50-symbol.json
 
 echo "start to run training script"
-python /workspace/examples/trainings/mxnet/training.py
-python /workspace/runs/projects/training.py
+python /workspace/runs/cifar10_ava/training.py
