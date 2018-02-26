@@ -13,4 +13,4 @@ mkdir /workspace/params
 mv default.json /workspace/params
 
 echo "start to run training script"
-python /workspace/runs/cifar10_ava/training.py
+nohup python /workspace/runs/cifar10_ava/training.py &
