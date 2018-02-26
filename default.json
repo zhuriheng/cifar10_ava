@@ -1,0 +1,10 @@
+{
+  "snapshot_interval_epochs"  : 1,
+  "max_epochs"  : 8,
+  "rand_crop" : true,
+  "rand_mirror" : true,
+  "crop_w"  : 224,
+  "crop_h"  : 224,
+  "batch_size"  : 64,
+  "valBatchSize" : 64
+}
